@@ -2,6 +2,7 @@
 #define LOGGER_HPP
 
 // TODO prevent vs code formatting macros
+// TODO add ability for comma separated text description, formating, and output destination
 
 #define LOG_INFO(message) Logger::info((message))
 #define LOG_WARNING(message) Logger::warning((message))

@@ -1,18 +1,47 @@
 #include "win32main.hpp"
 
 #include "core.hpp"
+#include "draw/draw.hpp"
 #include "logger/logger.hpp"
 
 // name of the window class we will register with the OS
 constexpr wchar window_class_name[] = L"raytrace_renderer";
 constexpr wchar window_title[] = L"Raytrace Renderer";
 
-LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
+// back buffer vars
+static Win32BackBuffer global_back_buffer{};
+static constexpr int fixed_buffer_width = 640;
+static constexpr int fixed_buffer_height = 360;
+
+// win32 functions
+static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+
+static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height);
+
+static void win32_draw(HDC device_conext, Win32BackBuffer* buffer); // TODO: Make it window size independent;
+
+// procedure to be called to handle windowsOS messages loop
+static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
 
 	LRESULT result = 0;
 
 	switch (message)
 	{
+	case WM_CREATE: {
+		bool success = win32_init_back_buffer(&global_back_buffer, fixed_buffer_width, fixed_buffer_height);
+		if (success == false) {
+			LOG_ERROR("failed to init_back_buffer");
+			result = -1;
+		}
+
+		for (int y = 100; y < 200; ++y) {
+			for (int x = 100; x < 300; ++x) {
+				set_pixel(&global_back_buffer, x, y, Vector4{ 0, 255, 0, 255 });
+			}
+		}
+
+	}break;
+
 	case WM_CLOSE: {
 		if (MessageBox(window, L"Are you sure you want to quit?", window_title, MB_OKCANCEL) == IDOK) {
 			DestroyWindow(window);
@@ -38,6 +67,8 @@ LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 			BLACKNESS
 		);
 
+		win32_draw(device_context, &global_back_buffer);
+
 		EndPaint(window, &ps);
 	}break;
 
@@ -47,6 +78,39 @@ LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 	}
 
 	return result;
+}
+
+static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height) {
+	constexpr int bytes_per_pixel = 4;
+
+	buffer->width = width;
+	buffer->height = height;
+	buffer->bytes_per_pixel = bytes_per_pixel;
+
+	buffer->info.bmiHeader.biSize = sizeof(buffer->info.bmiHeader);
+	buffer->info.bmiHeader.biWidth = buffer->width;
+	buffer->info.bmiHeader.biHeight = buffer->height;
+	buffer->info.bmiHeader.biPlanes = 1;
+	buffer->info.bmiHeader.biBitCount = (WORD)(buffer->bytes_per_pixel * bits_per_byte);
+	buffer->info.bmiHeader.biCompression = BI_RGB;
+
+	buffer->pitch = ALIGN4(width * bytes_per_pixel);
+
+	int memory_size = buffer->height * buffer->pitch;
+
+	buffer->memory = VirtualAlloc(0, memory_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+	return buffer->memory != nullptr;
+}
+
+static void win32_draw(HDC device_conext, Win32BackBuffer* buffer) {
+	// TODO: Make it window size independent;
+	StretchDIBits(
+		device_conext,
+		0, 0, fixed_buffer_width, fixed_buffer_height,
+		0, 0, fixed_buffer_width, fixed_buffer_height,
+		buffer->memory, &buffer->info, DIB_RGB_COLORS, SRCCOPY
+	);
 }
 
 // win32 apps entry point
@@ -61,7 +125,7 @@ int WINAPI wWinMain(
 	(void)cmd_args;
 
 	// creating and registering a window class
-	WNDCLASS window_class = {};
+	WNDCLASS window_class{};
 	window_class.style = CS_OWNDC | CS_VREDRAW | CS_HREDRAW;
 	window_class.lpfnWndProc = win32_procedure;
 	window_class.hInstance = process;
@@ -79,7 +143,7 @@ int WINAPI wWinMain(
 		window_class_name,
 		window_title,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT, fixed_buffer_width, fixed_buffer_height,
 		nullptr, nullptr,
 		process,
 		nullptr
@@ -93,7 +157,7 @@ int WINAPI wWinMain(
 	ShowWindow(window, show_code);
 
 	// handling windowsOS message loop
-	MSG message = {};
+	MSG message{};
 	while (GetMessage(&message, window, 0, 0) > 0) {
 		TranslateMessage(&message);
 		DispatchMessage(&message);

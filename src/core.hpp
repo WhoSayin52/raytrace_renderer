@@ -2,27 +2,50 @@
 #define CORE_HPP
 
 #include <cstdint>
-
 #include <cstddef>
-#include <cstdint>
-#include <cstdbool>
 
+// types
+using s32 = int32_t;
+using s64 = int64_t;
 
-using int32 = int32_t;
-using int64 = int64_t;
-
-using uint32 = uint32_t;
-using uint64 = uint64_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
 
 using wchar = wchar_t;
 
-using bool32 = int32;
+using bool32 = s32;
 
-constexpr uint64 kilobytes(uint64 bytes) { return bytes * 1024LL; }
-constexpr uint64 megabytes(uint64 bytes) { return kilobytes(bytes) * 1024LL; }
-constexpr uint64 gigabytes(uint64 bytes) { return megabytes(bytes) * 1024LL; }
-constexpr uint64 terabytes(uint64 bytes) { return gigabytes(bytes) * 1024LL; }
+// math
+#pragma warning(push)
+#pragma warning(disable: 4201)
+struct Vector3 {
+        union {
+                struct { int x, y, z; };
+                struct { int r, g, b; };
+                int data[3];
+        };
+};
 
+struct Vector4 {
+        union {
+                struct { int x, y, z, w; };
+                struct { int r, g, b, a; };
+                int data[4];
+        };
+};
+#pragma warning(pop)
+
+// memory
+constexpr int bits_per_byte = 8;
+
+constexpr u64 kilobytes(u64 bytes) { return bytes * 1024LL; }
+constexpr u64 megabytes(u64 bytes) { return kilobytes(bytes) * 1024LL; }
+constexpr u64 gigabytes(u64 bytes) { return megabytes(bytes) * 1024LL; }
+constexpr u64 terabytes(u64 bytes) { return gigabytes(bytes) * 1024LL; }
+
+#define ALIGN4(bytes) ((bytes) + 3) & ~3;
+
+// debugging
 #if !defined(NDEBUG)
 #define ASSERT(x)               \
         if(!(x)){               \

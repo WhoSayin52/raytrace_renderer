@@ -3,6 +3,13 @@
 
 #include <Windows.h>
 
-LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+struct Win32BackBuffer {
+	BITMAPINFO info;
+	void* memory;
+	int width;
+	int height;
+	int bytes_per_pixel;
+	int pitch;
+};
 
 #endif // WIN32MAIN_HPP
