@@ -4,8 +4,6 @@
 #include "draw/draw.hpp"
 #include "logger/logger.hpp"
 
-#include <WinUser.h>
-
 // name of the window class we will register with the OS
 constexpr wchar window_class_name[] = L"raytrace_renderer";
 constexpr wchar window_title[] = L"Raytrace Renderer";
@@ -19,7 +17,7 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height);
 
-static void win32_draw(HDC device_conext, Win32BackBuffer* buffer, Viewport viewport); // TODO: Make it window size independent;
+static void win32_draw(HDC device_conext, Win32BackBuffer* buffer, Viewport viewport);
 
 // procedure to be called to handle windowsOS messages loop
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
@@ -41,7 +39,7 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 		// TODO remove
 		for (int y = 100; y < 200; ++y) {
 			for (int x = 100; x < 300; ++x) {
-				set_pixel(&back_buffer, x, y, Vector4{ 0, 255, 0, 255 });
+				set_pixel(&back_buffer, x, y, Vector3{ 0, 255, 0 });
 			}
 		}
 

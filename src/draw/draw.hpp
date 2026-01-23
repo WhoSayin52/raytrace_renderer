@@ -17,6 +17,6 @@ struct Viewport {
 	int height;
 };
 
-void set_pixel(Win32BackBuffer* buffer, int x, int y, Vector4 rgba);
+void set_pixel(Win32BackBuffer* buffer, int x, int y, Vector3 rgb);
 
 #endif // DRAW_HPP

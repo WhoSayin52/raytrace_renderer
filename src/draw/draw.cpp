@@ -2,7 +2,7 @@
 
 #include "../win32main.hpp"
 
-void set_pixel(Win32BackBuffer* buffer, int x, int y, Vector4 rgba) {
+void set_pixel(Win32BackBuffer* buffer, int x, int y, Vector3 rgb) {
 	ASSERT(
 		(buffer->width > x) &&
 		(buffer->height > y) &&
@@ -12,5 +12,5 @@ void set_pixel(Win32BackBuffer* buffer, int x, int y, Vector4 rgba) {
 
 	u32* pixel = (u32*)((byte*)buffer->memory + (y * buffer->pitch) + (x * buffer->bytes_per_pixel));
 
-	*pixel = (rgba.a << 24) | (rgba.b << 16) | (rgba.g << 8) | rgba.r;
+	*pixel = (rgb.b << 16) | (rgb.g << 8) | rgb.r;
 }

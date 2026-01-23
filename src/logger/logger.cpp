@@ -1,7 +1,6 @@
 #include "logger.hpp"
 
 #include <iostream>
-#include <ctime>
 
 #define BLUE "\33[34m"
 #define YELLOW "\33[33m"
