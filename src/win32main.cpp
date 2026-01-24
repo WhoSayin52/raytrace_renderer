@@ -17,8 +17,8 @@ static Win32BackBuffer global_buffer;
 
 // win32 functions
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Win32ViewportDimension viewport);
-static Win32ViewportDimension win32_get_viewport_dimension(HWND window);
+static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Vector2 viewport);
+static Vector2 win32_get_viewport_dimension(HWND window);
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height);
 
 // win32 apps entry point
@@ -51,7 +51,7 @@ int WINAPI wWinMain(
 		window_class_name,
 		window_title,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, fixed_back_buffer_width, fixed_back_buffer_height, // TODO: make CW_USEDEFAULT
+		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		nullptr, nullptr,
 		process,
 		nullptr
@@ -89,7 +89,16 @@ int WINAPI wWinMain(
 		buffer.height = global_buffer.height;
 		buffer.pitch = global_buffer.pitch;
 
-		render(&buffer);
+		RECT client_rect;
+		GetClientRect(window, &client_rect);
+
+		Vector2 viewport_size = win32_get_viewport_dimension(window);
+
+		render(&buffer, viewport_size);
+
+		HDC device_conext = GetDC(window);
+		win32_update_window(device_conext, &global_buffer, viewport_size);
+		ReleaseDC(window, device_conext);
 	}
 
 	DWORD rc = GetLastError();
@@ -114,8 +123,9 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC device_context = BeginPaint(window, &ps);
+		Vector2 viewport = win32_get_viewport_dimension(window);
 
-		Win32ViewportDimension viewport = win32_get_viewport_dimension(window);
+		PatBlt(device_context, 0, 0, viewport.w, viewport.h, BLACKNESS);
 		win32_update_window(device_context, &global_buffer, viewport);
 
 		EndPaint(window, &ps);
@@ -139,24 +149,22 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 	return result;
 }
 
-static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Win32ViewportDimension viewport) {
-
+static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Vector2 viewport) {
 	StretchDIBits(
 		device_conext,
-		0, 0, viewport.width, viewport.height,
+		0, 0, viewport.w, viewport.h,
 		0, 0, buffer->width, buffer->height,
 		buffer->memory, &buffer->info, DIB_RGB_COLORS, SRCCOPY
 	);
 }
 
-static Win32ViewportDimension win32_get_viewport_dimension(HWND window) {
-	Win32ViewportDimension result{};
-
+static Vector2 win32_get_viewport_dimension(HWND window) {
 	RECT client_rect;
 	GetClientRect(window, &client_rect);
 
-	result.width = client_rect.right - client_rect.left;
-	result.height = client_rect.top - client_rect.bottom;
+	Vector2 result;
+	result.w = client_rect.right - client_rect.left;
+	result.h = client_rect.bottom - client_rect.top;
 
 	return result;
 }

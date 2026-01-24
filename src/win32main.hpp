@@ -12,9 +12,4 @@ struct Win32BackBuffer {
 	int bytes_per_pixel;
 };
 
-struct Win32ViewportDimension {
-	int width;
-	int height;
-};
-
 #endif // WIN32MAIN_HPP

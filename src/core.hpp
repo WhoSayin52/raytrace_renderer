@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <climits>
 
 // types
 using s32 = int32_t;
@@ -22,6 +23,15 @@ using byte = uchar;
 // math
 #pragma warning(push)
 #pragma warning(disable: 4201)
+struct Vector2 {
+	union {
+		struct { int x, y; };
+		struct { int w, h; };
+		struct { int min, max; };
+		int data[2];
+	};
+};
+
 struct Vector3 {
 	union {
 		struct { int x, y, z; };
