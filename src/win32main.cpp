@@ -1,128 +1,23 @@
 #include "win32main.hpp"
 
 #include "core.hpp"
-#include "draw/draw.hpp"
+#include "renderer/renderer.hpp"
 #include "logger/logger.hpp"
 
-// name of the window class we will register with the OS
-constexpr wchar window_class_name[] = L"raytrace_renderer";
-constexpr wchar window_title[] = L"Raytrace Renderer";
+// static global constants
+static constexpr wchar window_class_name[] = L"raytrace_renderer";
+static constexpr wchar window_title[] = L"Raytrace Renderer";
+static constexpr int fixed_back_buffer_width = 640;
+static constexpr int fixed_back_buffer_height = 360;
 
-// back buffer vars
-static constexpr int fixed_buffer_width = 640;
-static constexpr int fixed_buffer_height = 360;
+// static global vars
+static Win32BackBuffer global_buffer;
 
 // win32 functions
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-
+static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Win32ViewportDimension viewport);
+static Win32ViewportDimension win32_get_viewport_dimension(HWND window);
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height);
-
-static void win32_draw(HDC device_conext, Win32BackBuffer* buffer, Viewport viewport);
-
-// procedure to be called to handle windowsOS messages loop
-static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
-
-	static Win32BackBuffer back_buffer{};
-	static Viewport viewport{};
-
-	LRESULT result = 0;
-
-	switch (message)
-	{
-	case WM_CREATE: {
-		bool success = win32_init_back_buffer(&back_buffer, fixed_buffer_width, fixed_buffer_height);
-		if (success == false) {
-			LOG_ERROR("failed to init_back_buffer");
-			result = -1;
-		}
-
-		// TODO remove
-		for (int y = 100; y < 200; ++y) {
-			for (int x = 100; x < 300; ++x) {
-				set_pixel(&back_buffer, x, y, Vector3{ 0, 255, 0 });
-			}
-		}
-
-	}break;
-
-	case WM_PAINT: {
-		PAINTSTRUCT ps;
-		HDC device_context = BeginPaint(window, &ps);
-
-		int x = 0;
-		int y = 0;
-		int width = ps.rcPaint.right - ps.rcPaint.left;
-		int height = ps.rcPaint.bottom - ps.rcPaint.top;
-
-		PatBlt(
-			device_context,
-			x, y, width, height,
-			BLACKNESS
-		);
-
-		win32_draw(device_context, &back_buffer, viewport);
-
-		EndPaint(window, &ps);
-	}break;
-
-	case WM_SIZE: {
-		uint width = LOWORD(lparam);
-		uint height = HIWORD(lparam);
-
-		viewport.width = (int)width;
-		viewport.height = (int)height;
-	}break;
-
-	case WM_CLOSE: {
-		if (MessageBox(window, L"Are you sure you want to quit?", window_title, MB_OKCANCEL) == IDOK) {
-			DestroyWindow(window);
-		}
-	}break;
-
-	case WM_DESTROY: {
-		PostQuitMessage(0);
-	}break;
-
-	default: {
-		result = DefWindowProc(window, message, wparam, lparam);
-	}break;
-	}
-
-	return result;
-}
-
-static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height) {
-	constexpr int bytes_per_pixel = 4;
-
-	buffer->width = width;
-	buffer->height = height;
-	buffer->bytes_per_pixel = bytes_per_pixel;
-
-	buffer->info.bmiHeader.biSize = sizeof(buffer->info.bmiHeader);
-	buffer->info.bmiHeader.biWidth = buffer->width;
-	buffer->info.bmiHeader.biHeight = buffer->height;
-	buffer->info.bmiHeader.biPlanes = 1;
-	buffer->info.bmiHeader.biBitCount = (WORD)(buffer->bytes_per_pixel * bits_per_byte);
-	buffer->info.bmiHeader.biCompression = BI_RGB;
-
-	buffer->pitch = ALIGN4(width * bytes_per_pixel);
-
-	int memory_size = buffer->height * buffer->pitch;
-
-	buffer->memory = VirtualAlloc(0, memory_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
-	return buffer->memory != nullptr;
-}
-
-static void win32_draw(HDC device_conext, Win32BackBuffer* buffer, Viewport viewport) {
-
-	StretchDIBits(
-		device_conext,
-		0, 0, viewport.width, viewport.height,
-		0, 0, fixed_buffer_width, fixed_buffer_height,
-		buffer->memory, &buffer->info, DIB_RGB_COLORS, SRCCOPY
-	);
-}
 
 // win32 apps entry point
 int WINAPI wWinMain(
@@ -154,7 +49,7 @@ int WINAPI wWinMain(
 		window_class_name,
 		window_title,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, fixed_buffer_width, fixed_buffer_height,
+		CW_USEDEFAULT, CW_USEDEFAULT, fixed_back_buffer_width, fixed_back_buffer_height,
 		nullptr, nullptr,
 		process,
 		nullptr
@@ -167,11 +62,30 @@ int WINAPI wWinMain(
 
 	ShowWindow(window, show_code);
 
-	// handling windowsOS message loop
+	{
+		bool success = win32_init_back_buffer(&global_buffer, fixed_back_buffer_width, fixed_back_buffer_height);
+		if (success == false) {
+			LOG_ERROR("failed to init_back_buffer");
+			return 1;
+		}
+	}
+
+	// main loop
+	BackBuffer buffer{};
 	MSG message{};
-	while (GetMessage(&message, window, 0, 0) > 0) {
-		TranslateMessage(&message);
-		DispatchMessage(&message);
+	bool is_running = true;
+	while (is_running) {
+		// handling windowsOS message loop
+		while (PeekMessage(&message, window, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+
+		// rendering
+		buffer.memory = global_buffer.memory;
+		buffer.width = global_buffer.width;
+		buffer.height = global_buffer.height;
+		buffer.pitch = global_buffer.pitch;
 	}
 
 	DWORD rc = GetLastError();
@@ -182,3 +96,87 @@ int WINAPI wWinMain(
 
 	return 0;
 }
+
+// procedure to be called to handle windowsOS messages loop
+static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
+
+	LRESULT result = 0;
+
+	switch (message)
+	{
+	case WM_CREATE: {
+	}break;
+
+	case WM_PAINT: {
+		PAINTSTRUCT ps;
+		HDC device_context = BeginPaint(window, &ps);
+
+		Win32ViewportDimension viewport = win32_get_viewport_dimension(window);
+		win32_update_window(device_context, &global_buffer, viewport);
+
+		EndPaint(window, &ps);
+	}break;
+
+	case WM_CLOSE: {
+		if (MessageBox(window, L"Are you sure you want to quit?", window_title, MB_OKCANCEL) == IDOK) {
+			DestroyWindow(window);
+		}
+	}break;
+
+	case WM_DESTROY: {
+		PostQuitMessage(0);
+	}break;
+
+	default: {
+		result = DefWindowProc(window, message, wparam, lparam);
+	}break;
+	}
+
+	return result;
+}
+
+static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Win32ViewportDimension viewport) {
+
+	StretchDIBits(
+		device_conext,
+		0, 0, viewport.width, viewport.height,
+		0, 0, buffer->width, buffer->height,
+		buffer->memory, &buffer->info, DIB_RGB_COLORS, SRCCOPY
+	);
+}
+
+static Win32ViewportDimension win32_get_viewport_dimension(HWND window) {
+	Win32ViewportDimension result{};
+
+	RECT client_rect;
+	GetClientRect(window, &client_rect);
+
+	result.width = client_rect.right - client_rect.left;
+	result.height = client_rect.top - client_rect.bottom;
+
+	return result;
+}
+
+static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height) {
+	constexpr int bits_per_byte = 8;
+
+	buffer->width = width;
+	buffer->height = height;
+
+	buffer->info.bmiHeader.biSize = sizeof(buffer->info.bmiHeader);
+	buffer->info.bmiHeader.biWidth = buffer->width;
+	buffer->info.bmiHeader.biHeight = buffer->height;
+	buffer->info.bmiHeader.biPlanes = 1;
+	buffer->info.bmiHeader.biBitCount = (WORD)(bytes_per_pixel * bits_per_byte);
+	buffer->info.bmiHeader.biCompression = BI_RGB;
+
+	buffer->pitch = ALIGN4(width * bytes_per_pixel);
+
+	int memory_size = buffer->height * buffer->pitch;
+
+	buffer->memory = VirtualAlloc(0, memory_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+	return buffer->memory != nullptr;
+}
+
+

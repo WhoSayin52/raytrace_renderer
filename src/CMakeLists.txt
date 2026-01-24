@@ -3,6 +3,6 @@ target_sources(
 	core.hpp
 	win32main.hpp win32main.cpp
 
-	draw/draw.hpp draw/draw.cpp
+	renderer/renderer.hpp renderer/renderer.cpp
 	logger/logger.hpp logger/logger.cpp
 )

@@ -12,9 +12,12 @@ using uint = unsigned int;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
+using uchar = unsigned char;
 using wchar = wchar_t;
 
 using bool32 = s32;
+
+using byte = uchar;
 
 // math
 #pragma warning(push)
@@ -37,8 +40,6 @@ struct Vector4 {
 #pragma warning(pop)
 
 // memory
-constexpr int bits_per_byte = 8;
-
 constexpr u64 kilobytes(u64 bytes) { return bytes * 1024LL; }
 constexpr u64 megabytes(u64 bytes) { return kilobytes(bytes) * 1024LL; }
 constexpr u64 gigabytes(u64 bytes) { return megabytes(bytes) * 1024LL; }
