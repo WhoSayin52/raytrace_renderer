@@ -16,24 +16,24 @@ struct Sphere {
 };
 
 // static global constants
-constexpr Vector3 background_color = { 0, 0, 0 };
+constexpr Vector3 background_color = { 255, 255, 255 };
 
 // static global vars
 static Camera camera{ Vector3{0, 0, 0} };
 static Sphere scene[1] = {
 	Sphere{
-		.position = Vector3{0, 1, 1},
+		.position = Vector3{0, 0, 110},
 		.color = Vector3{0, 255, 0},
-		.r = 1
+		.r = 100
 	},
 };
 
 // functions
 static Vector3 trace_ray(Vector3 origin, Vector3 direction, int t_min, int t_max);
-static Vector3 buffer_to_viewport(int x, int y, Vector2 origin, int scale);
+static Vector3 buffer_to_viewport(int x, int y, Vector2 origin);
 static void set_pixel(BackBuffer* buffer, int x, int y, Vector3 rgb);
 
-void render(BackBuffer* buffer, Vector2 viewport_size) {
+void render(BackBuffer* buffer) {
 
 	int buffer_w = buffer->width;
 	int buffer_h = buffer->height;
@@ -42,11 +42,9 @@ void render(BackBuffer* buffer, Vector2 viewport_size) {
 	origin.x = buffer_w / 2;
 	origin.y = buffer_h / 2;
 
-	int scale = max(min(viewport_size.w / buffer_w, viewport_size.h / buffer_h), 1);
-
 	for (int y = 0; y < buffer_h; ++y) {
 		for (int x = 0; x < buffer_w; ++x) {
-			Vector3 ray_direction = buffer_to_viewport(x, y, origin, scale);
+			Vector3 ray_direction = buffer_to_viewport(x, y, origin);
 			Vector3 color = trace_ray(camera.position, ray_direction, 1, INT_MAX);
 			set_pixel(buffer, x, y, color);
 		}
@@ -93,10 +91,10 @@ static Vector3 trace_ray(Vector3 origin, Vector3 direction, int t_min, int t_max
 	return result;
 }
 
-static Vector3 buffer_to_viewport(int x, int y, Vector2 origin, int scale) {
+static Vector3 buffer_to_viewport(int x, int y, Vector2 origin) {
 	return Vector3{
-		(x - origin.x) * scale,
-		(y - origin.y) * scale,
+		(x - origin.x),
+		(y - origin.y),
 		1 // 1 is the distance between the camera and viewport
 	};
 }

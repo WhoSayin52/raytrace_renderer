@@ -1,24 +1,22 @@
 #include "win32main.hpp"
 
 #include "./core/core.hpp"
-#include "renderer/renderer.hpp"
-#include "logger/logger.hpp"
+#include "./logger/logger.hpp"
+#include "./renderer/renderer.hpp"
 
 // TODO: try to remove from global space
-
 // static global constants
 static constexpr wchar window_class_name[] = L"raytrace_renderer";
 static constexpr wchar window_title[] = L"Raytrace Renderer";
-static constexpr int fixed_back_buffer_width = 600;
-static constexpr int fixed_back_buffer_height = 600;
+static constexpr Vector2 viewport = { 1280, 720 };
+static constexpr int viewport_buffer_ratio = 2;
 
 // static global vars
 static Win32BackBuffer global_buffer;
 
 // win32 functions
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Vector2 viewport);
-static Vector2 win32_get_viewport_dimension(HWND window);
+static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer);
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height);
 
 // win32 apps entry point
@@ -31,6 +29,7 @@ int WINAPI wWinMain(
 	// unused vars
 	(void)prev_instance;
 	(void)cmd_args;
+	(void)show_code;
 
 	// creating and registering a window class
 	WNDCLASS window_class{};
@@ -45,13 +44,20 @@ int WINAPI wWinMain(
 		return 1;
 	}
 
+	RECT client_rect = { 0, 0, viewport.w, viewport.h };
+	DWORD style = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION;
+	AdjustWindowRect(&client_rect, style, 0);
+
 	// instantiating registered window class and showing it
 	HWND window = CreateWindowEx(
 		0,
 		window_class_name,
 		window_title,
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, fixed_back_buffer_width, fixed_back_buffer_height, // TODO: change to CW_USEDEFAULT
+		style,
+		CW_USEDEFAULT, 								// x
+		CW_USEDEFAULT, 								// y
+		client_rect.right - client_rect.left, 	// w
+		client_rect.bottom - client_rect.top,	// h
 		nullptr, nullptr,
 		process,
 		nullptr
@@ -62,10 +68,14 @@ int WINAPI wWinMain(
 		return 1;
 	}
 
-	ShowWindow(window, show_code);
+	ShowWindow(window, SW_SHOWNORMAL);
 
 	{
-		bool success = win32_init_back_buffer(&global_buffer, fixed_back_buffer_width, fixed_back_buffer_height);
+		Vector2 back_buffer_size;
+		back_buffer_size.w = viewport.w / viewport_buffer_ratio;
+		back_buffer_size.h = viewport.h / viewport_buffer_ratio;
+
+		bool success = win32_init_back_buffer(&global_buffer, back_buffer_size.w, back_buffer_size.h);
 		if (success == false) {
 			LOG_ERROR("failed to init_back_buffer");
 			return 1;
@@ -89,15 +99,11 @@ int WINAPI wWinMain(
 		buffer.height = global_buffer.height;
 		buffer.pitch = global_buffer.pitch;
 
-		RECT client_rect;
-		GetClientRect(window, &client_rect);
-
-		Vector2 viewport_size = win32_get_viewport_dimension(window);
-
-		render(&buffer, viewport_size);
+		render(&buffer);
 
 		HDC device_conext = GetDC(window);
-		win32_update_window(device_conext, &global_buffer, viewport_size);
+		win32_update_window(device_conext, &global_buffer);
+
 		ReleaseDC(window, device_conext);
 	}
 
@@ -123,10 +129,9 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC device_context = BeginPaint(window, &ps);
-		Vector2 viewport = win32_get_viewport_dimension(window);
 
-		PatBlt(device_context, 0, 0, viewport.w, viewport.h, WHITENESS);
-		win32_update_window(device_context, &global_buffer, viewport);
+		PatBlt(device_context, 0, 0, viewport.w, viewport.h, BLACKNESS);
+		win32_update_window(device_context, &global_buffer);
 
 		EndPaint(window, &ps);
 	}break;
@@ -149,28 +154,20 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 	return result;
 }
 
-static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Vector2 viewport) {
+static void win32_update_window(HDC device_context, Win32BackBuffer* buffer) {
 	StretchDIBits(
-		device_conext,
-		0, 0, viewport.w, viewport.h,
-		0, 0, buffer->width, buffer->height,
+		device_context,
+		0, 0, // dest
+		buffer->width * viewport_buffer_ratio,
+		buffer->height * viewport_buffer_ratio,
+		0, 0, buffer->width, buffer->height, 	// src
 		buffer->memory, &buffer->info, DIB_RGB_COLORS, SRCCOPY
 	);
 }
 
-static Vector2 win32_get_viewport_dimension(HWND window) {
-	RECT client_rect;
-	GetClientRect(window, &client_rect);
-
-	Vector2 result;
-	result.w = client_rect.right - client_rect.left;
-	result.h = client_rect.bottom - client_rect.top;
-
-	return result;
-}
-
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height) {
-	static int bits_per_byte = 8;
+	ASSERT(width >= 0 && height >= 0 && buffer->memory == nullptr);
+	int bits_per_byte = 8;
 
 	buffer->width = width;
 	buffer->height = height;
