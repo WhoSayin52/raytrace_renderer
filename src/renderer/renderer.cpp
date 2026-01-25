@@ -6,52 +6,45 @@
 
 // structs
 struct Camera {
-	Vector3 position;
+	Vector3f position;
 };
 
 struct Sphere {
-	Vector3 position;
+	Vector3f position;
 	Vector3 color;
-	int r;
+	f32 r;
 };
 
 // static global constants
 constexpr Vector3 background_color = { 255, 255, 255 };
 
 // static global vars
-static Camera camera{ Vector3{0, 0, 0} };
+static Camera camera{ .position = Vector3f{0, 0, 0} };
 static Sphere scene[1] = {
 	Sphere{
-		.position = Vector3{0, 0, 110},
+		.position = Vector3f{0.0f, 0.0f, 110.0f},
 		.color = Vector3{0, 255, 0},
-		.r = 100
+		.r = 100.0f
 	},
 };
 
 // functions
-static Vector3 trace_ray(Vector3 origin, Vector3 direction, int t_min, int t_max);
-static Vector3 buffer_to_viewport(int x, int y, Vector2 origin);
+static Vector3 trace_ray(Vector3f origin, Vector3f direction, int t_min, int t_max);
+static Vector3f canvas_to_viewport(int x, int y, Canvas canvas);
 static void set_pixel(BackBuffer* buffer, int x, int y, Vector3 rgb);
 
-void render(BackBuffer* buffer) {
+void render(BackBuffer* buffer, Canvas canvas) {
 
-	int buffer_w = buffer->width;
-	int buffer_h = buffer->height;
-
-	Vector2 origin;
-	origin.x = buffer_w / 2;
-	origin.y = buffer_h / 2;
-
-	for (int y = 0; y < buffer_h; ++y) {
-		for (int x = 0; x < buffer_w; ++x) {
-			Vector3 ray_direction = buffer_to_viewport(x, y, origin);
+	for (int y = 0; y < canvas.height; ++y) {
+		for (int x = 0; x < canvas.width; ++x) {
+			Vector3f ray_direction = canvas_to_viewport(x, y, canvas);
 			Vector3 color = trace_ray(camera.position, ray_direction, 1, INT_MAX);
 			set_pixel(buffer, x, y, color);
 		}
 	}
 }
 
-static Vector3 trace_ray(Vector3 origin, Vector3 direction, int t_min, int t_max) {
+static Vector3 trace_ray(Vector3f origin, Vector3f direction, int t_min, int t_max) {
 	Vector3 result = background_color;
 	f64 closest_t = t_max;
 
@@ -62,21 +55,21 @@ static Vector3 trace_ray(Vector3 origin, Vector3 direction, int t_min, int t_max
 		// looking for the intersections between the ray and the sphere by
 		// calculating the roots for the quadratic equation representing the intersection between 
 		// the parametric line: point = camera_position + ray_direction * t and the sphere: point = center + radius
-		Vector3 co = origin - sphere.position;
+		Vector3f co = origin - sphere.position;
 		int r = sphere.r;
 
-		f64 a = (f64)(dot(direction, direction));
-		f64 b = (f64)(dot(co, direction) * 2);
-		f64 c = (f64)(dot(co, co) - (r * r));
+		f32 a = dot(direction, direction);
+		f32 b = dot(co, direction) * 2;
+		f32 c = dot(co, co) - (r * r);
 
-		f64 delta = (b * b) - (4 * a * c);
+		f32 delta = (b * b) - (4 * a * c);
 
 		if (delta < 0.0) {
 			continue;
 		}
 
-		f64 t1 = (-b + sqrt(delta)) / (2 * a);
-		f64 t2 = (-b - sqrt(delta)) / (2 * a);
+		f32 t1 = (-b + sqrt(delta)) / (2 * a);
+		f32 t2 = (-b - sqrt(delta)) / (2 * a);
 
 		if (t1 > t_min && t1 < closest_t) {
 			closest_t = t1;
@@ -90,12 +83,12 @@ static Vector3 trace_ray(Vector3 origin, Vector3 direction, int t_min, int t_max
 
 	return result;
 }
-
-static Vector3 buffer_to_viewport(int x, int y, Vector2 origin) {
-	return Vector3{
-		(x - origin.x),
-		(y - origin.y),
-		1 // 1 is the distance between the camera and viewport
+// TODO: viewport is in world units;
+static Vector3f canvas_to_viewport(int x, int y, Canvas canvas) {
+	return Vector3f{
+		(f32)(x - canvas.origin.x),
+		(f32)(y - canvas.origin.y),
+		1.0f // 1 is the distance between the camera and viewport
 	};
 }
 

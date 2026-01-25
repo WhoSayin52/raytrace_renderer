@@ -8,15 +8,10 @@
 // static global constants
 static constexpr wchar window_class_name[] = L"raytrace_renderer";
 static constexpr wchar window_title[] = L"Raytrace Renderer";
-static constexpr Vector2 viewport = { 1280, 720 };
-static constexpr int viewport_buffer_ratio = 2;
-
-// static global vars
-static Win32BackBuffer global_buffer;
 
 // win32 functions
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer);
+static void win32_update_window(HDC device_conext, Win32BackBuffer* buffer, Canvas canvas);
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height);
 
 // win32 apps entry point
@@ -44,8 +39,14 @@ int WINAPI wWinMain(
 		return 1;
 	}
 
-	RECT client_rect = { 0, 0, viewport.w, viewport.h };
-	DWORD style = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION;
+	Canvas canvas{
+		.width = 1280,
+		.height = 720,
+		.origin = Vector2{ 1280 / 2, 720 / 2 }
+	};
+
+	RECT client_rect = { 0, 0, canvas.width, canvas.height };
+	DWORD style = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_CAPTION;
 	AdjustWindowRect(&client_rect, style, 0);
 
 	// instantiating registered window class and showing it
@@ -70,20 +71,22 @@ int WINAPI wWinMain(
 
 	ShowWindow(window, SW_SHOWNORMAL);
 
-	{
-		Vector2 back_buffer_size;
-		back_buffer_size.w = viewport.w / viewport_buffer_ratio;
-		back_buffer_size.h = viewport.h / viewport_buffer_ratio;
-
-		bool success = win32_init_back_buffer(&global_buffer, back_buffer_size.w, back_buffer_size.h);
-		if (success == false) {
-			LOG_ERROR("failed to init_back_buffer");
-			return 1;
-		}
+	// vars required for main loop
+	Win32BackBuffer win32_back_buffer{};
+	bool success = win32_init_back_buffer(&win32_back_buffer, canvas.width, canvas.height);
+	if (success == false) {
+		LOG_ERROR("failed to init_back_buffer");
+		return 1;
 	}
 
+	BackBuffer buffer{
+		.memory = win32_back_buffer.memory,
+		.width = win32_back_buffer.width,
+		.height = win32_back_buffer.height,
+		.pitch = win32_back_buffer.pitch
+	};
+
 	// main loop
-	BackBuffer buffer{};
 	MSG message{};
 	bool is_running = true;
 	while (is_running) {
@@ -94,16 +97,10 @@ int WINAPI wWinMain(
 		}
 
 		// rendering
-		buffer.memory = global_buffer.memory;
-		buffer.width = global_buffer.width;
-		buffer.height = global_buffer.height;
-		buffer.pitch = global_buffer.pitch;
-
-		render(&buffer);
+		render(&buffer, canvas);
 
 		HDC device_conext = GetDC(window);
-		win32_update_window(device_conext, &global_buffer);
-
+		win32_update_window(device_conext, &win32_back_buffer, canvas);
 		ReleaseDC(window, device_conext);
 	}
 
@@ -112,7 +109,6 @@ int WINAPI wWinMain(
 		LOG_ERROR("error code: " + rc);
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -123,16 +119,10 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 
 	switch (message)
 	{
-	case WM_CREATE: {
-	}break;
-
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC device_context = BeginPaint(window, &ps);
-
-		PatBlt(device_context, 0, 0, viewport.w, viewport.h, BLACKNESS);
-		win32_update_window(device_context, &global_buffer);
-
+		PatBlt(device_context, 0, 0, ps.rcPaint.right, ps.rcPaint.bottom, BLACKNESS);
 		EndPaint(window, &ps);
 	}break;
 
@@ -154,12 +144,10 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 	return result;
 }
 
-static void win32_update_window(HDC device_context, Win32BackBuffer* buffer) {
+static void win32_update_window(HDC device_context, Win32BackBuffer* buffer, Canvas canvas) {
 	StretchDIBits(
 		device_context,
-		0, 0, // dest
-		buffer->width * viewport_buffer_ratio,
-		buffer->height * viewport_buffer_ratio,
+		0, 0, canvas.width, canvas.height,  	//dest
 		0, 0, buffer->width, buffer->height, 	// src
 		buffer->memory, &buffer->info, DIB_RGB_COLORS, SRCCOPY
 	);

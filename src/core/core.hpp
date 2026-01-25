@@ -26,6 +26,7 @@ using byte = uchar;
 // math
 #pragma warning(push)
 #pragma warning(disable: 4201)
+// vectors2
 struct Vector2 {
 	union {
 		struct { int x, y; };
@@ -34,10 +35,21 @@ struct Vector2 {
 		int data[2];
 	};
 };
-
 Vector2 operator+(Vector2 v1, Vector2 v2);
 Vector2 operator-(Vector2 v1, Vector2 v2);
 
+struct Vector2f {
+	union {
+		struct { int x, y; };
+		struct { int w, h; };
+		struct { int min, max; };
+		int data[2];
+	};
+};
+Vector2f operator+(Vector2f v1, Vector2f v2);
+Vector2f operator-(Vector2f v1, Vector2f v2);
+
+// vector3
 struct Vector3 {
 	union {
 		struct { int x, y, z; };
@@ -45,11 +57,18 @@ struct Vector3 {
 		int data[3];
 	};
 };
-
 Vector3 operator+(Vector3 v1, Vector3 v2);
 Vector3 operator-(Vector3 v1, Vector3 v2);
 
-int dot(Vector3 v1, Vector3 v2);
+struct Vector3f {
+	union {
+		struct { f32 x, y, z; };
+		struct { f32 r, g, b; };
+		int data[3];
+	};
+};
+Vector3f operator+(Vector3f v1, Vector3f v2);
+Vector3f operator-(Vector3f v1, Vector3f v2);
 
 struct Vector4 {
 	union {
@@ -58,6 +77,13 @@ struct Vector4 {
 		int data[4];
 	};
 };
+
+
+
+// vector functions
+int dot(Vector3 v1, Vector3 v2);
+f32 dot(Vector3f v1, Vector3f v2);
+
 #pragma warning(pop)
 
 // memory
