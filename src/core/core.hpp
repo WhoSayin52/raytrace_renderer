@@ -13,6 +13,9 @@ using uint = unsigned int;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
+using f32 = float;
+using f64 = double;
+
 using uchar = unsigned char;
 using wchar = wchar_t;
 
@@ -32,6 +35,9 @@ struct Vector2 {
 	};
 };
 
+Vector2 operator+(Vector2 v1, Vector2 v2);
+Vector2 operator-(Vector2 v1, Vector2 v2);
+
 struct Vector3 {
 	union {
 		struct { int x, y, z; };
@@ -39,6 +45,11 @@ struct Vector3 {
 		int data[3];
 	};
 };
+
+Vector3 operator+(Vector3 v1, Vector3 v2);
+Vector3 operator-(Vector3 v1, Vector3 v2);
+
+int dot(Vector3 v1, Vector3 v2);
 
 struct Vector4 {
 	union {
@@ -58,13 +69,16 @@ constexpr u64 terabytes(u64 bytes) { return gigabytes(bytes) * 1024LL; }
 #define ALIGN4(bytes) ((bytes) + 3) & ~3;
 
 // debugging
-#	if !defined(NDEBUG)
-#		define ASSERT(x)     \
-			if(!(x)){         \
-				*(int*)0 = 0;  \
-			}
-#	else
-#		define ASSERT(x)
-#	endif // !defined(NDEBUG)
+#if !defined(NDEBUG)
+#	define ASSERT(x)     \
+		if(!(x)){         \
+			*(int*)0 = 0;  \
+		}
+#else
+#	define ASSERT(x)
+#endif // !defined(NDEBUG)
+
+// utility
+#define ARRAY_COUNT(arr) (sizeof((arr)) / sizeof((arr)[0]))
 
 #endif // CORE_HPP

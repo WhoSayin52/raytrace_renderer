@@ -1,7 +1,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include "../core.hpp"
+#include "../core/core.hpp"
 
 struct BackBuffer {
 	void* memory;

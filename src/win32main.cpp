@@ -1,6 +1,6 @@
 #include "win32main.hpp"
 
-#include "core.hpp"
+#include "./core/core.hpp"
 #include "renderer/renderer.hpp"
 #include "logger/logger.hpp"
 
@@ -9,8 +9,8 @@
 // static global constants
 static constexpr wchar window_class_name[] = L"raytrace_renderer";
 static constexpr wchar window_title[] = L"Raytrace Renderer";
-static constexpr int fixed_back_buffer_width = 640;
-static constexpr int fixed_back_buffer_height = 360;
+static constexpr int fixed_back_buffer_width = 600;
+static constexpr int fixed_back_buffer_height = 600;
 
 // static global vars
 static Win32BackBuffer global_buffer;
@@ -51,7 +51,7 @@ int WINAPI wWinMain(
 		window_class_name,
 		window_title,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT, fixed_back_buffer_width, fixed_back_buffer_height, // TODO: change to CW_USEDEFAULT
 		nullptr, nullptr,
 		process,
 		nullptr
@@ -125,7 +125,7 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 		HDC device_context = BeginPaint(window, &ps);
 		Vector2 viewport = win32_get_viewport_dimension(window);
 
-		PatBlt(device_context, 0, 0, viewport.w, viewport.h, BLACKNESS);
+		PatBlt(device_context, 0, 0, viewport.w, viewport.h, WHITENESS);
 		win32_update_window(device_context, &global_buffer, viewport);
 
 		EndPaint(window, &ps);
@@ -170,7 +170,7 @@ static Vector2 win32_get_viewport_dimension(HWND window) {
 }
 
 static bool win32_init_back_buffer(Win32BackBuffer* buffer, int width, int height) {
-	constexpr int bits_per_byte = 8;
+	static int bits_per_byte = 8;
 
 	buffer->width = width;
 	buffer->height = height;
