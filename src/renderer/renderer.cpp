@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 
+#include"./scene.hpp"
 #include "../utility/utility.hpp"
 
 #include <cmath>
@@ -7,18 +8,18 @@
 #include <cfloat>
 
 // structs
+struct Collision {
+	Vector3f position;
+	Vector3f normal;
+	Sphere* sphere;
+};
+
 struct Camera {
 	Vector3f position;
 	f32 near;			 // distance between camera and viewport. Anything in less gets clipped
 	f32 far;				 // distance between camera and furthest object. Anything beyond get clipped
 	f32 field_of_view; // in radians
 	f32 aspect_ratio;  // viewport/canvas width divided by viewport/canvas height 
-};
-
-struct Sphere {
-	Vector3f position;
-	f32 r;
-	Vector3 color;
 };
 
 // static global constants
@@ -29,29 +30,14 @@ static Camera camera{
 	.position = Vector3f{0.0f, 0.0f, 0.0f},	// x, y, z
 	.near = 1.0f,
 	.far = FLT_MAX,
-	.field_of_view = (f32)(45.0 * pi / 180.0),
+	.field_of_view = (f32)(100.0 * pi / 180.0),
 	.aspect_ratio = 16.0f / 9.0f
-};
-static Sphere scene[3] = {
-	Sphere{
-		.position = Vector3f{0.0f, -1.0f, 3.0f},
-		.r = 1.0f,
-		.color = Vector3{255, 0, 0}
-	},
-	Sphere{
-		.position = Vector3f{2.0f, 0.0f, 4.0f},
-		.r = 1.0f,
-		.color = Vector3{0, 0, 255}
-	},
-	Sphere{
-		.position = Vector3f{-2.0f, 0.0f, 4.0f},
-		.r = 1.0f,
-		.color = Vector3{0, 255, 0}
-	},
 };
 
 // functions
-static Vector3 trace_ray(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
+static Vector3 ray_cast(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
+static Collision* ray_intersection(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
+static Vector3 compute_color(Collision* collision, Vector3f direction);
 static Vector2 screen_to_canvas(int x, int y, Vector2 origin);
 static Vector3f canvas_to_viewport(int x, int y, Vector2f ratio);
 static void set_pixel(Canvas* canvas, int x, int y, Vector3 rgb);
@@ -69,25 +55,31 @@ void render(Canvas* canvas) {
 		for (int x = 0; x < canvas->width; ++x) {
 			Vector2 canvas_position = screen_to_canvas(x, y, canvas->origin);
 			Vector3f ray_direction = canvas_to_viewport(canvas_position.x, canvas_position.y, viewport_canvas_ratio);
-			Vector3 color = trace_ray(camera.position, ray_direction, camera.near, camera.far);
+			Vector3 color = ray_cast(camera.position, ray_direction, camera.near, camera.far);
 			set_pixel(canvas, x, y, color);
 		}
 	}
 }
 
-static Vector3 trace_ray(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
-	Vector3 result = background_color;
-	f64 closest_t = t_max;
+static Vector3 ray_cast(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
 
-	Sphere sphere;
-	for (s64 i = 0; i < ARRAY_COUNT(scene); ++i) {
-		sphere = scene[i];
+	Collision* collision = ray_intersection(origin, direction, t_min, t_max);
+	Vector3 color = compute_color(collision, direction);
+}
+
+static Collision* ray_intersection(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
+	Collision* result = nullptr;
+
+	f64 closest_t = t_max;
+	Sphere* sphere;
+	for (s64 i = 0; i < ARRAY_COUNT(spheres); ++i) {
+		sphere = &spheres[i];
 
 		// looking for the intersections between the ray and the sphere by
 		// calculating the roots for the quadratic equation representing the intersection between 
 		// the parametric line: point = camera_position + ray_direction * t and the sphere: point = center + radius
-		Vector3f co = origin - sphere.position;
-		f32 r = sphere.r;
+		Vector3f co = origin - sphere->position;
+		f32 r = sphere->r;
 
 		f32 a = dot(direction, direction);
 		f32 b = dot(co, direction) * 2;
@@ -104,15 +96,29 @@ static Vector3 trace_ray(Vector3f origin, Vector3f direction, f32 t_min, f32 t_m
 
 		if (t1 > t_min && t1 < closest_t) {
 			closest_t = t1;
-			result = sphere.color;
+			result->sphere = sphere;
 		}
 		if (t2 > t_min && t2 < closest_t) {
 			closest_t = t2;
-			result = sphere.color;
+			result->sphere = sphere;
 		}
 	}
 
+	if (result != nullptr) {
+		result->position = origin + direction * closest_t;
+		result->normal = normalize(result->position - result->sphere->position);
+	}
 	return result;
+}
+
+static Vector3 compute_color(Collision* collision, Vector3f direction) {
+	if (collision == nullptr) {
+		return background_color;
+	}
+
+	Vector3 sphere_color = collision->sphere->color;
+
+	f32 diffuse = dot(collision->normal, -direction);
 }
 
 static Vector2 screen_to_canvas(int x, int y, Vector2 origin) {
@@ -121,7 +127,7 @@ static Vector2 screen_to_canvas(int x, int y, Vector2 origin) {
 		y - origin.y
 	};
 }
-// TODO: viewport is in world units;
+
 static Vector3f canvas_to_viewport(int x, int y, Vector2f ratio) {
 	return Vector3f{
 		x * ratio.w,

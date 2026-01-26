@@ -3,10 +3,6 @@
 
 #include "../core/core.hpp"
 
-struct Rect {
-	int x, y, width, height;
-};
-
 struct Canvas {
 	void* memory;
 	int width;
