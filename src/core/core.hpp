@@ -42,7 +42,7 @@ struct Vector2f {
 		struct { f32 x, y; };
 		struct { f32 w, h; };
 		struct { f32 min, max; };
-		int data[2];
+		f32 data[2];
 	};
 };
 Vector2f operator+(Vector2f v1, Vector2f v2);
@@ -65,7 +65,7 @@ struct Vector3f {
 		struct { f32 x, y, z; };
 		struct { f32 w, h, l; };
 		struct { f32 r, g, b; };
-		int data[3];
+		f32 data[3];
 	};
 };
 Vector3f operator+(Vector3f v1, Vector3f v2);

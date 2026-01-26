@@ -17,8 +17,8 @@ struct Camera {
 
 struct Sphere {
 	Vector3f position;
-	Vector3 color;
 	f32 r;
+	Vector3 color;
 };
 
 // static global constants
@@ -32,42 +32,50 @@ static Camera camera{
 	.field_of_view = (f32)(45.0 * pi / 180.0),
 	.aspect_ratio = 16.0f / 9.0f
 };
-static Sphere scene[1] = {
+static Sphere scene[3] = {
 	Sphere{
-		.position = Vector3f{0.0f, 0.0f, 100.0f},
-		.color = Vector3{0, 255, 0},
-		.r = 1.0f
+		.position = Vector3f{0.0f, -1.0f, 3.0f},
+		.r = 1.0f,
+		.color = Vector3{255, 0, 0}
+	},
+	Sphere{
+		.position = Vector3f{2.0f, 0.0f, 4.0f},
+		.r = 1.0f,
+		.color = Vector3{0, 0, 255}
+	},
+	Sphere{
+		.position = Vector3f{-2.0f, 0.0f, 4.0f},
+		.r = 1.0f,
+		.color = Vector3{0, 255, 0}
 	},
 };
 
 // functions
-static Vector3 trace_ray(Vector3f origin, Vector3f direction, int t_min, int t_max);
+static Vector3 trace_ray(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
 static Vector2 screen_to_canvas(int x, int y, Vector2 origin);
 static Vector3f canvas_to_viewport(int x, int y, Vector2f ratio);
 static void set_pixel(Canvas* canvas, int x, int y, Vector3 rgb);
 
 void render(Canvas* canvas) {
-
 	Vector2f viewport;
 	viewport.w = 2.0f * tan(camera.field_of_view / 2.0f);
 	viewport.h = viewport.w / camera.aspect_ratio;
 
-	Vector2f viewport_canvas_ratio{
-		.w = viewport.w / canvas->width,
-		.h = viewport.h / canvas->height
-	};
+	Vector2f viewport_canvas_ratio;
+	viewport_canvas_ratio.w = viewport.w / canvas->width;
+	viewport_canvas_ratio.h = viewport.h / canvas->height;
 
 	for (int y = 0; y < canvas->height; ++y) {
 		for (int x = 0; x < canvas->width; ++x) {
 			Vector2 canvas_position = screen_to_canvas(x, y, canvas->origin);
 			Vector3f ray_direction = canvas_to_viewport(canvas_position.x, canvas_position.y, viewport_canvas_ratio);
-			Vector3 color = trace_ray(camera.position, ray_direction, 1, INT_MAX);
+			Vector3 color = trace_ray(camera.position, ray_direction, camera.near, camera.far);
 			set_pixel(canvas, x, y, color);
 		}
 	}
 }
 
-static Vector3 trace_ray(Vector3f origin, Vector3f direction, int t_min, int t_max) {
+static Vector3 trace_ray(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
 	Vector3 result = background_color;
 	f64 closest_t = t_max;
 
@@ -132,6 +140,6 @@ static void set_pixel(Canvas* canvas, int x, int y, Vector3 rgb) {
 
 	u32* pixel = (u32*)((byte*)canvas->memory + (y * canvas->pitch) + (x * bytes_per_pixel));
 
-	*pixel = (rgb.b << 16) | (rgb.g << 8) | rgb.r;
+	*pixel = (rgb.r << 16) | (rgb.g << 8) | rgb.b;
 }
 

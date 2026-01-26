@@ -71,15 +71,14 @@ int WINAPI wWinMain(
 	}
 	ShowWindow(window, SW_SHOWNORMAL);
 
-	Canvas canvas{
-		.memory = win32_back_buffer.memory,
-		.width = win32_back_buffer.width,
-		.height = win32_back_buffer.height,
-		.pitch = win32_back_buffer.pitch,
-		.origin = Vector2{
-			win32_back_buffer.width / 2,
-			win32_back_buffer.height / 2
-		}
+	Canvas canvas;
+	canvas.memory = win32_back_buffer.memory;
+	canvas.width = win32_back_buffer.width;
+	canvas.height = win32_back_buffer.height;
+	canvas.pitch = win32_back_buffer.pitch;
+	canvas.origin = Vector2{
+		win32_back_buffer.width / 2,
+		win32_back_buffer.height / 2
 	};
 
 	// main loop
