@@ -1,7 +1,8 @@
 #ifndef SCENE_HPP
 #define SCENE_HPP
 
-#include "../core/core.hpp"
+#include "../core.hpp"
+#include "../math/math.hpp"
 
 struct LightComponent {
 	Vector3f ambient;
@@ -24,20 +25,20 @@ PointLight point_lights[] = {
 	PointLight{
 		.position = Vector3f{2.0f, 1.0f, 0.0f},
 		.light = LightComponent{
-			.ambient = {1.0f, 1.0f, 1.0f},
-			.diffuse = {1.0f, 1.0f, 1.0f},
-			.specular = {1.0f, 1.0f, 1.0f}
+			.ambient = {0.2f, 0.2f, 0.2f},
+			.diffuse = {0.5f, 0.5f, 0.5f},
+			.specular = {0.5f, 0.5f, 0.5f}
 		}
 	},
 };
 
 DirectionalLight direct_lights[] = {
 	DirectionalLight{
-		.direction = Vector3f{1.0f, 4.0f, 4.0f},
+		.direction = normalize(Vector3f{1.0f, -4.0f, 4.0f}),
 		.light = LightComponent{
-			.ambient = {1.0f, 1.0f, 1.0f},
-			.diffuse = {1.0f, 1.0f, 1.0f},
-			.specular = {1.0f, 1.0f, 1.0f}
+			.ambient = {0.2f, 0.2f, 0.2f},
+			.diffuse = {0.5f, 0.5f, 0.5f},
+			.specular = {0.5f, 0.5f, 0.5f}
 		}
 	},
 };
@@ -65,7 +66,7 @@ inline Sphere spheres[] = {
 		.material = Material{
 			.diffuse = {1.0f, 0.0f, 0.0f},
 			.specular = {1.0f, 0.0f, 0.0f},
-			.shininess = 0.0f
+			.shininess = 500.0f
 		} // red
 	},
 	Sphere{
@@ -74,7 +75,7 @@ inline Sphere spheres[] = {
 		.material = Material{
 			.diffuse = {0.0f, 0.0f, 1.0f},
 			.specular = {0.0f, 0.0f, 1.0f},
-			.shininess = 0.0f
+			.shininess = 500.0f
 		} // blue
 	},
 	Sphere{
@@ -83,7 +84,7 @@ inline Sphere spheres[] = {
 		.material = Material{
 			.diffuse = {0.0f, 1.0f, 0.0f},
 			.specular = {0.0f, 1.0f, 0.0f},
-			.shininess = 0.0f
+			.shininess = 10.0f
 		} // green
 	},
 	Sphere{
@@ -92,7 +93,7 @@ inline Sphere spheres[] = {
 		.material = Material{
 			.diffuse = {1.0f, 1.0f, 0.0f},
 			.specular = {1.0f, 1.0f, 0.0f},
-			.shininess = 0.0f
+			.shininess = 1000.0f
 		} // yellow
 	},
 };

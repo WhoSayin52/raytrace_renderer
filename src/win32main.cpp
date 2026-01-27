@@ -1,7 +1,8 @@
 #include "win32main.hpp"
 
-#include "./core/core.hpp"
+#include "./core.hpp"
 #include "./logger/logger.hpp"
+#include "./math/math.hpp"
 #include "./renderer/renderer.hpp"
 
 // TODO: try to remove from global space

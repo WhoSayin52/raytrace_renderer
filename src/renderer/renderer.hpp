@@ -1,7 +1,8 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include "../core/core.hpp"
+#include "../core.hpp"
+#include "../math/math.hpp"
 
 struct Canvas {
 	void* memory;
