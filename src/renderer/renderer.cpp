@@ -13,7 +13,6 @@ struct Collision {
 	Vector3f position;
 	Vector3f normal;
 	Sphere* sphere;
-	bool has_collided; // TODO: remove bool field once replace by arena allocator
 };
 
 struct Camera {
@@ -28,11 +27,15 @@ struct Camera {
 static constexpr Vector3f background_color = { 1.0f, 1.0f, 1.0f };
 
 // static global vars
-static Collision collision{ // TODO: replace with arena allocator
+static Collision light_collision{ // TODO: replace with arena allocator and local var
 	.position = {},
 	.normal = {},
 	.sphere = nullptr,
-	.has_collided = false
+};
+static Collision shadow_collision{ // TODO: replace with arena allocator and local var
+	.position = {},
+	.normal = {},
+	.sphere = nullptr,
 };
 static Camera camera{
 	.position = Vector3f{0.0f, 0.0f, 0.0f},	// x, y, z
@@ -43,11 +46,10 @@ static Camera camera{
 };
 
 // functions
-static Vector3f ray_cast(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
-static void ray_intersection(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
-static Vector3f compute_color(Vector3f ray_direction);
-static Vector3f compute_directional_light(Vector3f view_direction);
-static Vector3f compute_point_light(Vector3f view_direction);
+static bool ray_cast(Collision* collision, Vector3f origin, Vector3f direction, f32 t_min, f32 t_max);
+static Vector3f compute_color(Collision* collision, Vector3f ray_direction);
+static Vector3f compute_directional_light(Collision* collision, Vector3f view_direction);
+static Vector3f compute_point_light(Collision* collision, Vector3f view_direction);
 static Vector2 screen_to_canvas(int x, int y, Vector2 origin);
 static Vector3f canvas_to_viewport(int x, int y, Vector2f ratio);
 static Vector3 to_rgb(Vector3f color);
@@ -67,21 +69,15 @@ void render(Canvas* canvas) {
 			Vector2 canvas_position = screen_to_canvas(x, y, canvas->origin);
 			Vector3f ray_direction = canvas_to_viewport(canvas_position.x, canvas_position.y, viewport_canvas_ratio);
 			ray_direction = normalize(ray_direction);
-			Vector3f color = ray_cast(camera.position, ray_direction, camera.near, camera.far);
+			bool is_collision = ray_cast(&light_collision, camera.position, ray_direction, camera.near, camera.far);
+			Vector3f color = is_collision ? compute_color(&light_collision, ray_direction) : background_color;
 			Vector3 rgb = to_rgb(color);
 			set_pixel(canvas, x, y, rgb);
 		}
 	}
 }
 
-static Vector3f ray_cast(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
-	ray_intersection(origin, direction, t_min, t_max);
-	Vector3f color = compute_color(direction);
-
-	return color;
-}
-
-static void ray_intersection(Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
+static bool ray_cast(Collision* collision, Vector3f origin, Vector3f direction, f32 t_min, f32 t_max) {
 	Sphere* closest_sphere = nullptr;
 	f32 closest_t = t_max;
 
@@ -119,36 +115,39 @@ static void ray_intersection(Vector3f origin, Vector3f direction, f32 t_min, f32
 	}
 
 	if (closest_sphere == nullptr) {
-		collision.has_collided = false;
+		return false;
 	}
 	else {
-		collision.has_collided = true;
-		collision.sphere = closest_sphere;
-		collision.position = origin + direction * closest_t;
-		collision.normal = normalize(collision.position - collision.sphere->position);
+		collision->sphere = closest_sphere;
+		collision->position = origin + direction * closest_t;
+		collision->normal = normalize(collision->position - collision->sphere->position);
+
+		return true;
 	}
 }
 
-static Vector3f compute_color(Vector3f ray_direction) {
+static Vector3f compute_color(Collision* collision, Vector3f ray_direction) {
 	// using phong lighting model;
-	if (collision.has_collided == false) {
-		return background_color;
-	}
-
 	Vector3f view_direction = -ray_direction;
-	Vector3f result = compute_directional_light(view_direction);
-	result += compute_point_light(view_direction);
+	Vector3f result = compute_directional_light(collision, view_direction);
+	result += compute_point_light(collision, view_direction);
 
 	return result;
 }
 
-static Vector3f compute_directional_light(Vector3f view_direction) {
+static Vector3f compute_directional_light(Collision* collision, Vector3f view_direction) {
 	Vector3f result{};
 
-	Vector3f normal = collision.normal;
-	Material* material = &collision.sphere->material;
+	Vector3f normal = collision->normal;
+	Material* material = &collision->sphere->material;
 	for (int i = 0; i < ARRAY_COUNT(direct_lights); ++i) {
 		DirectionalLight* light = &direct_lights[i];
+
+		// shadow checking
+		bool has_collision = ray_cast(&shadow_collision, collision->position, -light->direction, 0.01f, FLT_MAX);
+		if (has_collision) {
+			continue;
+		}
 
 		// ambient
 		Vector3f ambient = material->diffuse * light->light.ambient;
@@ -168,15 +167,20 @@ static Vector3f compute_directional_light(Vector3f view_direction) {
 	return result;
 }
 
-static Vector3f compute_point_light(Vector3f view_direction) {
+static Vector3f compute_point_light(Collision* collision, Vector3f view_direction) {
 	Vector3f result{};
 
-	Vector3f normal = collision.normal;
-	Material* material = &collision.sphere->material;
+	Vector3f normal = collision->normal;
+	Material* material = &collision->sphere->material;
 	for (int i = 0; i < ARRAY_COUNT(point_lights); ++i) {
 		PointLight* light = &point_lights[i];
 
-		Vector3f light_direction = collision.position - light->position;
+		Vector3f light_direction = collision->position - light->position;
+		// shadow checking
+		bool has_collision = ray_cast(&shadow_collision, collision->position, -light_direction, 0.01f, 1.0f);
+		if (has_collision) {
+			continue;
+		}
 		f32 distance_from_light = length(light_direction);
 		light_direction = normalize(light_direction);
 
