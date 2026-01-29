@@ -56,12 +56,17 @@ Follow these steps to clone and build the project:
 3. Clone the repository: 
 ```bash
 git clone <repo-url>
-cd raytrace_renderer
+cd ./raytrace_renderer
 ```
 3. Build the project:
 ```bash
 cmake --preset default
 cmake --build build --config Release # or Debug if desired
+```
+4. Build the project:
+```bash
+cd ./build/Release # or Debug
+explorer .
 ```
 
 ## Conclusion
@@ -73,5 +78,6 @@ The next steps are to:
 - Progress to DirectX 12
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
 
