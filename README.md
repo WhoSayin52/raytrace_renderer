@@ -33,6 +33,36 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 <img width="1602" height="940" alt="extra" src="https://github.com/user-attachments/assets/7590973c-ba9f-49e9-9e84-d2bbadfe9939" />
 
 ## Installation
+### Pre-Compiled Windowsx64 amd64
+
+---
+
+### Build From Source
+#### Prerequiste
+Before building the project, make sure you have the following installed:
+
+- **CMake** (version 3.20 or higher recommended)
+- **MSVC Compiler** (Visual Studio 2022 or newer)
+- **Git** (for cloning the repository)
+
+> **Tip:** You can use the "Developer Command Prompt for Visual Studio" to ensure MSVC is available in your terminal.
+
+#### Steps
+Follow these steps to clone and build the project:
+
+1. **Open the Developer Shell on Windows**  
+   This ensures all necessary compiler tools are available.
+   
+3. Clone the repository: 
+```bash
+git clone <repo-url>
+cd raytrace_renderer
+```
+3. Build the project:
+```bash
+cmake --preset default
+cmake --build build --config Release # or Debug if desired
+```
 
 ## Conclusion
 While there is still plenty of room for improvement—such as supporting objects beyond spheres or adding multi-threading—this project successfully achieved its goal of building a strong foundation in graphics programming and understanding the graphics pipeline.
@@ -43,4 +73,5 @@ The next steps are to:
 - Progress to DirectX 12
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
