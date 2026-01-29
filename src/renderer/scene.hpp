@@ -23,6 +23,22 @@ struct PointLight {
 	f32 quadratic;
 };
 
+struct Material {
+	LightComponent color;
+	f32 shininess;
+	f32 reflectiveness;
+};
+
+struct Rect {
+	int x, y, width, height;
+};
+
+struct Sphere {
+	Vector3f position;
+	f32 r;
+	Material material;
+};
+
 DirectionalLight direct_lights[] = {
 	DirectionalLight{
 		.direction = normalize(Vector3f{-1.0f, -2.0f, 4.0f}),
@@ -48,30 +64,16 @@ PointLight point_lights[] = {
 	},
 };
 
-struct Material {
-	Vector3f diffuse;
-	Vector3f specular;
-	f32 shininess;
-	f32 reflectiveness;
-};
-
-struct Rect {
-	int x, y, width, height;
-};
-
-struct Sphere {
-	Vector3f position;
-	f32 r;
-	Material material;
-};
-
 inline Sphere spheres[] = {
 	Sphere{
 		.position = Vector3f{0.0f, -1.0f, 3.0f},
 		.r = 1.0f,
 		.material = Material{
-			.diffuse = {0.0f, 0.0f, 1.0f},
-			.specular = {0.0f, 0.0f, 1.0f},
+			.color = LightComponent{
+				.ambient = {0.0f, 0.0f, 0.2f},
+				.diffuse = {0.0f, 0.0f, 1.0f},
+				.specular = {0.0f, 0.0f, 1.0f}
+			},
 			.shininess = 500.0f,
 			.reflectiveness = 0.2f
 		} // blue
@@ -80,9 +82,12 @@ inline Sphere spheres[] = {
 		.position = Vector3f{2.0f, 0.0f, 4.0f},
 		.r = 1.0f,
 		.material = Material{
-			.diffuse = {1.0f, 0.0f, 0.0f},
-			.specular = {1.0f, 0.0f, 0.0f},
-			.shininess = 50.0f,
+			.color = LightComponent{
+				.ambient = {0.2f, 0.0f, 0.0f},
+				.diffuse = {1.0f, 0.0f, 0.0f},
+				.specular = {1.0f, 0.0f, 0.0f}
+			},
+			.shininess = 500.0f,
 			.reflectiveness = 0.3f
 		} // red
 	},
@@ -90,8 +95,11 @@ inline Sphere spheres[] = {
 		.position = Vector3f{-2.0f, 0.0f, 4.0f},
 		.r = 1.0f,
 		.material = Material{
-			.diffuse = {0.0f, 1.0f, 0.0f},
-			.specular = {0.0f, 1.0f, 0.0f},
+			.color = LightComponent{
+				.ambient = {0.0f, 0.2f, 0.0f},
+				.diffuse = {0.0f, 1.0f, 0.0f},
+				.specular = {0.0f, 1.0f, 0.0f}
+			},
 			.shininess = 10.0f,
 			.reflectiveness = 0.4f
 		} // green
@@ -100,12 +108,16 @@ inline Sphere spheres[] = {
 		.position = Vector3f{0.0f, -1001.0f, 0.0f},
 		.r = 1000.0f,
 		.material = Material{
-			.diffuse = {1.0f, 1.0f, 1.0f},
-			.specular = {1.0f, 1.0f, 1.0f},
+			.color = LightComponent{
+				.ambient = {0.2f, 0.2f, 0.2f},
+				.diffuse = {1.0f, 1.0f, 1.0f},
+				.specular = {1.0f, 1.0f, 1.0f}
+			},
 			.shininess = 500.0f,
 			.reflectiveness = 0.5f
-		} // yellow
+		} // ground
 	},
 };
+
 
 #endif // SCENE_HPP
