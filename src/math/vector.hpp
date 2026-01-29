@@ -78,7 +78,9 @@ constexpr Vector2 operator*(Vector2 v1, Vector2 v2) { return { (v1.x * v2.x), (v
 constexpr Vector2f operator*(Vector2f v1, Vector2f v2) { return { (v1.x * v2.x), (v1.y * v2.y) }; }
 
 constexpr Vector2 operator*(Vector2 v, int scaler) { return { (v.x * scaler), (v.y * scaler) }; }
+constexpr Vector2 operator*(int scaler, Vector2 v) { return v * scaler; }
 constexpr Vector2f operator*(Vector2f v, f32 scaler) { return { (v.x * scaler), (v.y * scaler) }; }
+constexpr Vector2f operator*(f32 scaler, Vector2f v) { return v * scaler; }
 
 // vector3 operator overloading
 constexpr Vector3 operator+(Vector3 v) { return v; }
@@ -105,7 +107,9 @@ constexpr Vector3 operator*(Vector3 v1, Vector3 v2) { return { (v1.x * v2.x), (v
 constexpr Vector3f operator*(Vector3f v1, Vector3f v2) { return { (v1.x * v2.x), (v1.y * v2.y), (v1.z * v2.z) }; }
 
 constexpr Vector3 operator*(Vector3 v, int scaler) { return { (v.x * scaler), (v.y * scaler), (v.z * scaler) }; }
+constexpr Vector3 operator*(int scaler, Vector3 v) { return v * scaler; }
 constexpr Vector3f operator*(Vector3f v, f32 scaler) { return { (v.x * scaler), (v.y * scaler), (v.z * scaler) }; }
+constexpr Vector3f operator*(f32 scaler, Vector3f v) { return v * scaler; }
 
 // vector functions
 constexpr int dot(Vector3 v1, Vector3 v2) {

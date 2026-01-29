@@ -8,7 +8,7 @@
 // TODO: try to remove from global space
 // static global constants
 static constexpr wchar window_class_name[] = L"raytrace_renderer";
-static constexpr wchar window_title[] = L"Raytrace Renderer";
+static constexpr wchar window_title[] = L"Raytrace Renderer by WhoSayin52";
 
 // win32 functions
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);

@@ -39,10 +39,10 @@ static Collision shadow_collision{ // TODO: replace with arena allocator and loc
 	.sphere = nullptr,
 };
 static Camera camera{
-	.position = Vector3f{0.0f, 0.0f, 0.0f},	// x, y, z
+	.position = Vector3f{0.0f, 0.0f, -1.0f},	// x, y, z
 	.near = 1.0f,
 	.far = FLT_MAX,
-	.field_of_view = (f32)(100.0 * pi / 180.0),
+	.field_of_view = (f32)(80.0 * pi / 180.0),
 	.aspect_ratio = 16.0f / 9.0f
 };
 
@@ -71,7 +71,7 @@ void render(Canvas* canvas) {
 			Vector3f ray_direction = canvas_to_viewport(canvas_position.x, canvas_position.y, viewport_canvas_ratio);
 			ray_direction = normalize(ray_direction);
 			bool is_collision = ray_cast(&light_collision, camera.position, ray_direction, camera.near, camera.far);
-			Vector3f color = is_collision ? compute_color(&light_collision, ray_direction, 3) : background_color;
+			Vector3f color = is_collision ? compute_color(&light_collision, ray_direction, 0) : background_color;
 			Vector3 rgb = to_rgb(color);
 			set_pixel(canvas, x, y, rgb);
 		}
@@ -244,11 +244,23 @@ static Vector2 screen_to_canvas(int x, int y, Vector2 origin) {
 }
 
 static Vector3f canvas_to_viewport(int x, int y, Vector2f ratio) {
+
+	Vector3f z_basis = normalize(-camera.position);
+	Vector3f x_basis = normalize(cross(Vector3f{ 0.0f, 1.0f, 0.0f }, z_basis));
+	Vector3f y_basis = cross(z_basis, x_basis);
+
+	f32 px = x * ratio.w;
+	f32 py = y * ratio.h;
+	f32 pz = camera.near;
+
+	return px * x_basis + py * y_basis + pz * z_basis;
+	/*
 	return Vector3f{
-		x * ratio.w - camera.position.x,
-		y * ratio.h - camera.position.y,
+		x * ratio.w,
+		y * ratio.h,
 		camera.near  // distance between the camera and viewport
 	};
+	*/
 }
 
 static Vector3 to_rgb(Vector3f color) {
