@@ -35,6 +35,8 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 ## Installation
 ### Pre-Compiled Windowsx64 amd64
 
+[v0.1.0 Release](https://github.com/WhoSayin52/raytrace_renderer/raytrace_renderer.exe)
+
 ---
 
 ### Build From Source
@@ -78,6 +80,7 @@ The next steps are to:
 - Progress to DirectX 12
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
 
 
