@@ -14,7 +14,6 @@ A real-time 3D software ray-trace renderer built from scratch using only the Win
 The renderer implements the Phong lighting model and supports shadows and reflections, with all rendering performed on the CPU.
 
 ### Tools
-
 ![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 
@@ -26,7 +25,6 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 5. Rendering from scratch using a software backbuffer and GDI via `StretchDIBits`.
 
 ## Screenshots
-
 ### No Lighting
 <img width="1602" height="940" alt="no_light" src="https://github.com/user-attachments/assets/b120d2c3-db0d-4ce1-a862-23878b4a1a5f" />
 
@@ -39,7 +37,6 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 
 ## Installation
 ### Pre-Compiled Windows amd64
-
 [v0.1.0 Release](https://github.com/WhoSayin52/raytrace_renderer/releases/tag/v0.1.0/raytrace_renderer.exe )
 
 ---
@@ -75,7 +72,7 @@ explorer .
 ```
 
 ## Conclusion
-While there is still plenty of room for improvement, such as supporting objects beyond spheres or adding multi-threading, this project successfully achieved its goal of building a strong foundation in graphics programming and raytracing.
+While there is still plenty of room for improvement, such as supporting objects beyond spheres or adding multi-threading, this project successfully achieved its goal of being a gentle introduction into graphics programming and ray-tracing.
 
 The next steps are to:
 - Implement a rasterizer
@@ -83,6 +80,7 @@ The next steps are to:
 - Progress to DirectX 12
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
 
 
