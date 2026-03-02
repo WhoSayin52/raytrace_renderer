@@ -5,10 +5,12 @@
 #include "./math/math.hpp"
 #include "./renderer/renderer.hpp"
 
-// TODO: try to remove from global space
 // static global constants
 static constexpr wchar window_class_name[] = L"raytrace_renderer";
 static constexpr wchar window_title[] = L"Raytrace Renderer by WhoSayin52";
+
+// static global vars
+static bool global_is_running = true;
 
 // win32 functions
 static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
@@ -84,8 +86,7 @@ int WINAPI wWinMain(
 
 	// main loop
 	MSG message{};
-	bool is_running = true;
-	while (is_running) {
+	while (global_is_running) {
 		// handling windowsOS message loop
 		while (PeekMessage(&message, window, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&message);
@@ -124,6 +125,7 @@ static LRESULT win32_procedure(HWND window, UINT message, WPARAM wparam, LPARAM 
 
 	case WM_CLOSE: {
 		if (MessageBox(window, L"Are you sure you want to quit?", window_title, MB_OKCANCEL) == IDOK) {
+			global_is_running = false;
 			DestroyWindow(window);
 		}
 	}break;
