@@ -68,13 +68,14 @@ cmake --build build --config Release # or Debug if desired
 4. Run the project:
 ```bash
 cd ./build/Release # or Debug
-explorer .
+./raytrace_renderer.exe # or explorer .
 ```
 
 ## Conclusion
 While there is still plenty of room for improvement, such as supporting objects beyond spheres or adding multi-threading, this project successfully achieved its goal of being a gentle introduction into graphics programming and ray-tracing.
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
 
 
