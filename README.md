@@ -57,7 +57,7 @@ Follow these steps to clone and build the project:
    
 3. Clone the repository: 
 ```bash
-git clone <repo-url>
+git clone git@github.com:WhoSayin52/raytrace_renderer.git
 cd ./raytrace_renderer
 ```
 3. Build the project:
@@ -75,6 +75,7 @@ explorer .
 While there is still plenty of room for improvement, such as supporting objects beyond spheres or adding multi-threading, this project successfully achieved its goal of being a gentle introduction into graphics programming and ray-tracing.
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
 
 
