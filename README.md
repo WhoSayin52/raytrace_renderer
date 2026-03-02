@@ -37,7 +37,7 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 
 ## Installation
 ### Pre-Compiled Windows amd64
-[v0.1.0 Release](https://github.com/WhoSayin52/raytrace_renderer/releases/tag/v0.1.0/raytrace_renderer.exe )
+[v0.1.0 Release](https://github.com/WhoSayin52/raytrace_renderer/releases/download/v0.1.0/raytrace_renderer.exe)
 
 ---
 
@@ -75,6 +75,7 @@ explorer .
 While there is still plenty of room for improvement, such as supporting objects beyond spheres or adding multi-threading, this project successfully achieved its goal of being a gentle introduction into graphics programming and ray-tracing.
 
 <img width="1602" height="940" alt="conclusion" src="https://github.com/user-attachments/assets/449d5593-c30b-4308-8dec-dd6d1d695bd7" />
+
 
 
 
