@@ -18,7 +18,7 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 
 ## Learning Objectives
-1. First steps into graphics programming, including lighting models (Phong lighting), shadows, reflections, ray casting, and basic collision detection.
+1. First step into graphics programming, including lighting models (Phong lighting), shadows, reflections, ray casting, and basic collision detection.
 2. A hands-on introduction to the Win32 API and the Windows message loop, including `VirtualAlloc`, `WindowProc`, `DefWindowProc`, and `PostMessage`.
 3. A deeper understanding of low-level memory management concepts such as allocation granularity, memory pages, alignment, and manual memory management.
 4. Applying linear algebra to applications, for example using rotation matrices to convert between camera space and world space.
