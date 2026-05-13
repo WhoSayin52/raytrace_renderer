@@ -1,4 +1,4 @@
-# Real-Time Raytracer
+# Raytracer
 
 <img width="1602" height="940" alt="main" src="https://github.com/user-attachments/assets/dae268a8-0bc1-4bc5-940b-2f3ad2093a0c" />
 
@@ -10,7 +10,7 @@
 - [Conclusion](#conclusion)
 
 ## Description
-A real-time 3D software ray-trace renderer built from scratch using only the Win32 API.  
+A 3D software ray-trace renderer built from scratch using only the Win32 API.  
 The renderer implements the Phong lighting model and supports shadows and reflections, with all rendering performed on the CPU.
 
 ### Tools
@@ -18,10 +18,10 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 
 ## Learning Objectives
-1. First steps into real-time graphics programming, including lighting models (Phong lighting), shadows, reflections, ray casting, and basic collision detection.
+1. First steps into graphics programming, including lighting models (Phong lighting), shadows, reflections, ray casting, and basic collision detection.
 2. A hands-on introduction to the Win32 API and the Windows message loop, including `VirtualAlloc`, `WindowProc`, `DefWindowProc`, and `PostMessage`.
 3. A deeper understanding of low-level memory management concepts such as allocation granularity, memory pages, alignment, and manual memory management.
-4. Applying linear algebra to real-time applications, for example using rotation matrices to convert between camera space and world space.
+4. Applying linear algebra to applications, for example using rotation matrices to convert between camera space and world space.
 5. Rendering from scratch using a software backbuffer and GDI via `StretchDIBits`.
 
 ## Screenshots
