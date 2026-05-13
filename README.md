@@ -36,7 +36,7 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 <img width="1602" height="940" alt="extra" src="https://github.com/user-attachments/assets/7590973c-ba9f-49e9-9e84-d2bbadfe9939" />
 
 ## Installation
-### Pre-Compiled Windows amd64
+### Pre-Compiled Windows x64
 [v0.1.0 Release](https://github.com/WhoSayin52/raytrace_renderer/releases/download/v0.1.0/raytrace_renderer.exe)
 
 ---
