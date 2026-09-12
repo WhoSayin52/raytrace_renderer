@@ -28,10 +28,10 @@ The renderer implements the Phong lighting model and supports shadows and reflec
 ### No Lighting
 <img width="1602" height="940" alt="no_light" src="https://github.com/user-attachments/assets/b120d2c3-db0d-4ce1-a862-23878b4a1a5f" />
 
-### Lighting
+### Lighting and Shadows
 <img width="1602" height="940" alt="lighting" src="https://github.com/user-attachments/assets/78b5850e-b83e-4889-9231-8477566e0a19" />
 
-### Shadows and Reflections
+### Reflections
 <img width="1602" height="940" alt="final" src="https://github.com/user-attachments/assets/0b1ec33c-f27a-4632-866c-bc24e0df3b45" />
 <img width="1602" height="940" alt="extra" src="https://github.com/user-attachments/assets/7590973c-ba9f-49e9-9e84-d2bbadfe9939" />
 
